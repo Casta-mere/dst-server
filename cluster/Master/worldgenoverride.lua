@@ -1,1 +1,5 @@
-return { override_enabled = true, preset = "SURVIVAL_TOGETHER" }
+return {
+    override_enabled = true,
+    preset = "ENDLESS",
+    overrides = {},
+}
