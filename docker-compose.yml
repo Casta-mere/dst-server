@@ -20,7 +20,8 @@ services:
       options: { max-size: 10m, max-file: "3" }
 
   dst-master:
-    image: ghcr.io/casta-mere/dst-server:latest
+    build: /volume3/Dev/dst-server
+    image: dst-server:local
     container_name: dst-master
     ports:
       - "27018:27018/udp"
@@ -40,7 +41,8 @@ services:
       options: { max-size: 10m, max-file: "3" }
 
   dst-caves:
-    image: ghcr.io/casta-mere/dst-server:latest
+    build: /volume3/Dev/dst-server
+    image: dst-server:local
     container_name: dst-caves
     ports:
       - "11001:11001/udp"
