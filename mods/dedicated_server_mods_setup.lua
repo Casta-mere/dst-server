@@ -1,0 +1,2 @@
+-- Add Steam Workshop mod IDs here (found in the Workshop URL: ?id=<ID>)
+-- ServerModSetup("123456789")

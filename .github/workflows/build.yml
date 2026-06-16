@@ -1,0 +1,106 @@
+name: Build and Push DST Server Image
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - Dockerfile
+      - entrypoint.sh
+      - .github/workflows/build.yml
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      build_id: ${{ steps.ver.outputs.build_id }}
+      should_build: ${{ steps.gate.outputs.should_build }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Query DST server build ID
+        id: ver
+        run: |
+          mkdir /tmp/steam
+          curl -sqL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz \
+            | tar xz -C /tmp/steam
+          BUILD_ID=$(/tmp/steam/steamcmd.sh \
+            +login anonymous +app_info_update 1 +app_info_print 343050 +quit 2>/dev/null \
+            | awk '/"public"/{found=1} found && /"buildid"/{print $2; exit}' \
+            | tr -d '"')
+          echo "DST build ID: $BUILD_ID"
+          echo "build_id=$BUILD_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Check if already built
+        id: gate
+        run: |
+          BUILD_ID="${{ steps.ver.outputs.build_id }}"
+          if git tag | grep -qx "dst-${BUILD_ID}"; then
+            echo "Already built dst-${BUILD_ID}, skipping."
+            echo "should_build=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "New version ${BUILD_ID}, will build."
+            echo "should_build=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: check-version
+    # On schedule: only build if new DST version detected
+    # On push/dispatch: always build (Dockerfile or workflow changed)
+    if: needs.check-version.outputs.should_build == 'true' || github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=dst-${{ needs.check-version.outputs.build_id }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: DST_BUILD_ID=${{ needs.check-version.outputs.build_id }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Tag repo with DST build ID
+        if: needs.check-version.outputs.should_build == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "dst-${{ needs.check-version.outputs.build_id }}"
+          git push origin "dst-${{ needs.check-version.outputs.build_id }}"

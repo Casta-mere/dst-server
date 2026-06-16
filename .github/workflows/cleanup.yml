@@ -1,0 +1,19 @@
+name: Cleanup Old Package Versions
+
+on:
+  workflow_run:
+    workflows: ["Build and Push DST Server Image"]
+    types: [completed]
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Delete untagged versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: dst-server
+          package-type: container
+          delete-only-untagged-versions: true
