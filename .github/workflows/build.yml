@@ -94,6 +94,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: DST_BUILD_ID=${{ needs.check-version.outputs.build_id }}
+          provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
