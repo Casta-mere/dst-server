@@ -1,5 +1,5 @@
-# NAS deployment reference — /volume3/Dev/dst/docker-compose.yml
-# Game files pre-downloaded to /volume3/Dev/dst/game/ via cm2network/steamcmd
+# Run from /volume3/Dev/dst-server on the NAS
+# Game files pre-downloaded to /volume3/Dev/dst/game/ via steamcmd
 
 services:
   timid:
@@ -20,7 +20,7 @@ services:
       options: { max-size: 10m, max-file: "3" }
 
   dst-master:
-    build: /volume3/Dev/dst-server
+    build: .
     image: dst-runtime:local
     container_name: dst-master
     ports:
@@ -30,8 +30,8 @@ services:
       - "timid.group.dst"
     volumes:
       - /volume3/Dev/dst/game:/opt/dst
-      - ./cluster:/data/MyCluster
-      - ./mods:/mods
+      - /volume3/Dev/dst/cluster:/data/MyCluster
+      - /volume3/Dev/dst/mods:/mods
     environment:
       SHARD: Master
       CLUSTER_NAME: MyCluster
@@ -42,7 +42,7 @@ services:
       options: { max-size: 10m, max-file: "3" }
 
   dst-caves:
-    build: /volume3/Dev/dst-server
+    build: .
     image: dst-runtime:local
     container_name: dst-caves
     ports:
@@ -53,8 +53,8 @@ services:
       - "timid.group.dst"
     volumes:
       - /volume3/Dev/dst/game:/opt/dst
-      - ./cluster:/data/MyCluster
-      - ./mods:/mods
+      - /volume3/Dev/dst/cluster:/data/MyCluster
+      - /volume3/Dev/dst/mods:/mods
     environment:
       SHARD: Caves
       CLUSTER_NAME: MyCluster
