@@ -3,7 +3,7 @@ FROM debian:bookworm-slim
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates lib32gcc-s1 curl \
+        ca-certificates lib32gcc-s1 curl libcurl4-gnutls \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/steamcmd && \
