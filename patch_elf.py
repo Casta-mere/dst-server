@@ -31,6 +31,9 @@ def patch(path: str) -> None:
         0x6FFFFFFE,  # DT_VERNEED
         0x6FFFFFFF,  # DT_VERNEEDNUM
     }
+    # Replace with an OS-specific no-op tag (glibc ignores unknowns but does NOT
+    # stop scanning — unlike DT_NULL=0 which terminates the table scan early).
+    NOOP_TAG = 0x60000000
 
     for i in range(e_phnum):
         ph = e_phoff + i * e_phentsize
@@ -44,7 +47,7 @@ def patch(path: str) -> None:
             if tag == DT_NULL:
                 break
             if tag in TARGETS:
-                struct.pack_into(endian + "QQ", data, pos, 0, 0)
+                struct.pack_into(endian + "QQ", data, pos, NOOP_TAG, 0)
             pos += 16
         break
 
