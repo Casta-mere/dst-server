@@ -9,6 +9,7 @@ FIFO=/tmp/dst.in
 # Link bind-mounted mods dir so server finds it
 ln -sfn /mods /opt/dst/mods
 
+rm -f "$FIFO"
 mkfifo "$FIFO"
 sleep infinity > "$FIFO" &
 HOLD=$!
@@ -22,7 +23,7 @@ graceful_stop() {
 }
 trap graceful_stop SIGTERM SIGINT
 
-/opt/dst/bin/dontstarve_dedicated_server_nullrenderer_x64 \
+/opt/dst/bin64/dontstarve_dedicated_server_nullrenderer_x64 \
     -console \
     -cluster "$CLUSTER_NAME" \
     -shard "$SHARD" \
