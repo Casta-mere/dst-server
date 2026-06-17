@@ -3,7 +3,8 @@ FROM ubuntu:22.04
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates lib32gcc-s1 curl libcurl4-gnutls \
+        ca-certificates lib32gcc-s1 curl libcurl4 \
+    && ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/steamcmd && \
