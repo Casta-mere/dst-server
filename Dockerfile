@@ -1,11 +1,9 @@
-FROM ubuntu:22.04
+FROM debian:bullseye-slim
 
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates lib32gcc-s1 curl libcurl4 \
-    && ln -s /usr/lib/x86_64-linux-gnu/libcurl.so.4 /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4 \
-    && ldconfig \
+        ca-certificates lib32gcc-s1 curl libcurl4-gnutls \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/steamcmd && \
