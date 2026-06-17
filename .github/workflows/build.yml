@@ -9,6 +9,7 @@ on:
     paths:
       - Dockerfile
       - entrypoint.sh
+      - patch_elf.py
       - .github/workflows/build.yml
 
 env:

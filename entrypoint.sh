@@ -7,13 +7,13 @@ CLUSTER_NAME=${CLUSTER_NAME:-MyCluster}
 DATA_DIR=${DATA_DIR:-/data}
 FIFO=/tmp/dst.in
 
-# Patch DST binary to use system libcurl. Idempotent — safe to run every start.
-# patchelf: redirect libcurl-gnutls.so.4 -> libcurl.so.4 in DT_NEEDED
-# objcopy: remove both version sections (.gnu.version references .gnu.version_r;
-#          removing only one leaves the ELF in an inconsistent state)
-patchelf --replace-needed libcurl-gnutls.so.4 libcurl.so.4 "$DST_BIN" 2>/dev/null || true
-objcopy --remove-section .gnu.version --remove-section .gnu.version_r "$DST_BIN" 2>/dev/null || true
+# Patch ELF DYNAMIC segment to drop version requirements (DT_VERNEED/VERSYM).
+# Lets the binary load system libcurl.so.4 via the libcurl-gnutls.so.4 symlink.
+# Idempotent — safe to run every start; re-applies automatically after DST updates.
+python3 /patch_elf.py "$DST_BIN"
 
+# Replace game's mods dir with symlink to the user-managed mods volume.
+[ -d /opt/dst/mods ] && [ ! -L /opt/dst/mods ] && rm -rf /opt/dst/mods
 ln -sfn /mods /opt/dst/mods
 
 rm -f "$FIFO"
