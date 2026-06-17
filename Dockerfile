@@ -1,7 +1,10 @@
 # Stage 1: extract GnuTLS-flavoured libcurl from Debian buster
 # (buster is the last release that ships libcurl4-gnutls as a runtime package)
 FROM debian:buster-slim AS gnutls
-RUN apt-get update && \
+RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
+    sed -i 's|security.debian.org|archive.debian.org/debian-security|g' /etc/apt/sources.list && \
+    sed -i '/buster-updates/d' /etc/apt/sources.list && \
+    apt-get update && \
     apt-get install -y --no-install-recommends libcurl4-gnutls && \
     rm -rf /var/lib/apt/lists/*
 
