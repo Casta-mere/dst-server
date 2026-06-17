@@ -1,24 +1,9 @@
-# Stage 1: extract GnuTLS-flavoured libcurl from Debian buster
-# (buster is the last release that ships libcurl4-gnutls as a runtime package)
-FROM debian:buster-slim AS gnutls
-RUN sed -i 's/deb.debian.org/archive.debian.org/g' /etc/apt/sources.list && \
-    sed -i 's|security.debian.org|archive.debian.org/debian-security|g' /etc/apt/sources.list && \
-    sed -i '/buster-updates/d' /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends libcurl4-gnutls && \
-    rm -rf /var/lib/apt/lists/*
-
-# Stage 2: actual server image
 FROM ubuntu:22.04
-
-# Copy the real GnuTLS libcurl (with CURL_GNUTLS_3 symbol) from buster
-COPY --from=gnutls /usr/lib/x86_64-linux-gnu/libcurl-gnutls.so.4* /usr/lib/x86_64-linux-gnu/
 
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        ca-certificates lib32gcc-s1 curl \
-    && ldconfig \
+        ca-certificates lib32gcc-s1 curl libcurl4 patchelf \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/steamcmd && \
@@ -32,7 +17,9 @@ RUN /opt/steamcmd/steamcmd.sh \
         +force_install_dir /opt/dst \
         +login anonymous \
         +app_update 343050 validate \
-        +quit
+        +quit && \
+    patchelf --replace-needed libcurl-gnutls.so.4 libcurl.so.4 \
+        /opt/dst/bin64/dontstarve_dedicated_server_nullrenderer_x64
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
