@@ -30,7 +30,7 @@ services:
       - "timid.group.dst"
     volumes:
       - /volume3/Dev/dst/game:/opt/dst
-      - /volume3/Dev/dst/cluster:/data/MyCluster
+      - /volume3/Dev/dst/cluster:/data/DoNotStarveTogether/MyCluster
       - /volume3/Dev/dst/mods:/mods
     environment:
       SHARD: Master
@@ -53,7 +53,7 @@ services:
       - "timid.group.dst"
     volumes:
       - /volume3/Dev/dst/game:/opt/dst
-      - /volume3/Dev/dst/cluster:/data/MyCluster
+      - /volume3/Dev/dst/cluster:/data/DoNotStarveTogether/MyCluster
       - /volume3/Dev/dst/mods:/mods
     environment:
       SHARD: Caves

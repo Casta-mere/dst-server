@@ -35,6 +35,7 @@ def patch(path: str) -> None:
     # stop scanning — unlike DT_NULL=0 which terminates the table scan early).
     NOOP_TAG = 0x60000000
 
+    changed = False
     for i in range(e_phnum):
         ph = e_phoff + i * e_phentsize
         if struct.unpack_from(endian + "I", data, ph)[0] != PT_DYNAMIC:
@@ -48,11 +49,15 @@ def patch(path: str) -> None:
                 break
             if tag in TARGETS:
                 struct.pack_into(endian + "QQ", data, pos, NOOP_TAG, 0)
+                changed = True
             pos += 16
         break
 
-    with open(path, "wb") as f:
-        f.write(bytes(data))
+    # Only write back when something actually changed — avoid "Text file busy"
+    # when two shards start simultaneously on the same shared game volume.
+    if changed:
+        with open(path, "wb") as f:
+            f.write(bytes(data))
 
 
 if __name__ == "__main__":
