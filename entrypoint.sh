@@ -30,7 +30,7 @@ graceful_stop() {
 }
 trap graceful_stop SIGTERM SIGINT
 
-cd /opt/dst
+cd /opt/dst/data
 "$DST_BIN" \
     -console \
     -cluster "$CLUSTER_NAME" \
