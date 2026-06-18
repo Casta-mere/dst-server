@@ -1,33 +1,16 @@
 # Run from /volume3/Dev/dst-server on the NAS
 # Game files pre-downloaded to /volume3/Dev/dst/game/ via steamcmd
+# Auto-sleep via pause_when_empty=true in cluster.ini (built into DST)
 
 services:
-  timid:
-    image: fuglesteg/timid
-    ports:
-      - "11000:11000/udp"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    environment:
-      TIMID_PORT: 11000
-      TIMID_TARGET_ADDRESS: dst-master:11000
-      TIMID_CONTAINER_GROUP: dst
-      TIMID_CONTAINER_SHUTDOWN_DELAY: 10m
-      TIMID_CONNECTION_TIMEOUT_DELAY: 10m
-    restart: always
-    logging:
-      driver: json-file
-      options: { max-size: 10m, max-file: "3" }
-
   dst-master:
     build: .
     image: dst-runtime:local
     container_name: dst-master
     ports:
+      - "11000:11000/udp"
       - "27018:27018/udp"
       - "8768:8768/udp"
-    labels:
-      - "timid.group.dst"
     volumes:
       - /volume3/Dev/dst/game:/opt/dst
       - /volume3/Dev/dst/cluster:/data/DoNotStarveTogether/MyCluster
@@ -49,8 +32,6 @@ services:
       - "11001:11001/udp"
       - "27019:27019/udp"
       - "8769:8769/udp"
-    labels:
-      - "timid.group.dst"
     volumes:
       - /volume3/Dev/dst/game:/opt/dst
       - /volume3/Dev/dst/cluster:/data/DoNotStarveTogether/MyCluster
