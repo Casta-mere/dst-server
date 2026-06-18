@@ -10,6 +10,7 @@ on:
       - Dockerfile
       - entrypoint.sh
       - patch_elf.py
+      - auto-update.sh
       - .github/workflows/build.yml
 
 env:
