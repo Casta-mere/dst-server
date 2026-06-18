@@ -53,11 +53,18 @@ def patch(path: str) -> None:
             pos += 16
         break
 
-    # Only write back when something actually changed — avoid "Text file busy"
+    # Only write back when something actually changed — avoids "Text file busy"
     # when two shards start simultaneously on the same shared game volume.
+    # If both race to the write, the loser gets ETXTBSY but the winner already
+    # applied the patch, so the loser can safely ignore it.
     if changed:
-        with open(path, "wb") as f:
-            f.write(bytes(data))
+        try:
+            with open(path, "wb") as f:
+                f.write(bytes(data))
+        except OSError as e:
+            import errno
+            if e.errno != errno.ETXTBSY:
+                raise
 
 
 if __name__ == "__main__":
